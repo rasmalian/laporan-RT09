@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  font-family:sans-serif;
+  background:#f5f6fa;
+  margin:0;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px;
+  background:white;
+}
+
+.topbar button{
+  width:40px;
+  height:40px;
+  border:none;
+  border-radius:50%;
+  background:#007bff;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
+
+.container{
+  max-width:500px;
+  margin:auto;
+  padding:15px;
+}
+
+.card{
+  background:white;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+button.main{
+  width:100%;
+  padding:12px;
+  background:#007bff;
+  color:white;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.plus{color:green}
+.minus{color:red}
+
+/* MONTH PICKER */
+input[type="month"]{
+  width:100%;
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  font-size:16px;
+  background:white;
+}
+
+/* WRAP */
+.input-wrap{
+  width:90%;
+  overflow:visible;
+}
+
+/* 🔥 SUMMARY HIGHLIGHT */
+.summary-box{
+  text-align:center;
+  padding:20px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#4facfe,#00f2fe);
+  color:black;
+}
+
+.summary-box .periode{
+  font-size:14px;
+  opacity:0.9;
+}
+
+.summary-box .total{
+  font-size:24px;
+  font-weight:bold;
+  margin-top:5px;
+}
+
+/* LOADING */
+#loading{
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  background:rgba(255,255,255,0.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <button onclick="goBack()">&#8592;</button>
+  <b>Report</b>
+</div>
+
+<div class="container">
+
+<div class="card">
+  <label>Pilih Bulan</label>
+  <div class="input-wrap">
+    <input type="month" id="bulan">
+  </div>
+  <br><br>
+  <button class="main" onclick="load()">Load</button>
+</div>
+
+<div id="summary" class="card"></div>
+<div id="list"></div>
+
+</div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div style="
+    padding:20px;
+    background:white;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+  ">
+     Loading...
+  </div>
+</div>
+
+<script>
+const isLogin = localStorage.getItem("login");
+
+if (!isLogin || isLogin !== "true") {
+  window.location.replace("login.html");
+}
+  
+
+const API="https://script.google.com/macros/s/AKfycbyEvc4ntv7M3bIMxkIRmRLM0sa-_-6uJnIh9uvAzzPBo5HlD9QmUEpIWpmZgOTYUVX4pQ/exec";
+
+function formatTanggal(v){
+  if(!v) return "-";
+  const d = new Date(v);
+  if(isNaN(d)) return "-";
+
+  return d.toLocaleDateString("id-ID"); // hasil: 24/04/2026
+}
+  
+function showLoading(){
+  document.getElementById("loading").style.display="flex";
+}
+
+function hideLoading(){
+  document.getElementById("loading").style.display="none";
+}
+
+function goBack(){
+  if(document.referrer){
+    history.back();
+  }else{
+    location.href="dashboard.html";
+  }
+}
+
+function el(id){
+  return document.getElementById(id);
+}
+
+async function load(){
+
+  showLoading();
+
+  try{
+
+    const ym = el("bulan").value;
+
+    let url = API+"?action=getReport";
+    if(ym) url += "&ym="+ym;
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    let total = 0;
+
+    el("list").innerHTML = "";
+
+    data.forEach(r=>{
+
+      const val = Number(r.nilai) || 0;
+      total += val;
+
+      const div = document.createElement("div");
+      div.className = "card";
+
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div>${r.kategori || "-"}</div>
+            <div style="font-size:13px;color:#666">${formatTanggal(r.tanggal) || "-"}</div>
+          </div>
+          <div>
+            <b class="${val>=0?'plus':'minus'}">
+              ${val.toLocaleString("id-ID")}
+            </b>
+          </div>
+        </div>
+      `;
+
+      el("list").appendChild(div);
+    });
+
+    /* 🔥 SUMMARY (SUDAH DI CENTER + HIGHLIGHT) */
+    el("summary").innerHTML = `
+      <div class="summary-box">
+        <div class="periode">Periode: ${ym || "Bulan Ini"}</div>
+        <div class="total">Rp ${total.toLocaleString("id-ID")}</div>
+      </div>
+    `;
+
+  }catch(e){
+    alert("Gagal load data");
+  }finally{
+    hideLoading();
+  }
+}
+
+/* AUTO BULAN SEKARANG */
+window.onload = () => {
+  const now = new Date();
+  el("bulan").value = now.toISOString().slice(0,7);
+  load();
+};
+
+</script>
+
+</body>
+</html>
