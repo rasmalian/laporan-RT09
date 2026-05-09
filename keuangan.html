@@ -103,13 +103,44 @@ input[type="month"]{
   justify-content:center;
   z-index:9999;
 }
+
+/* BOTTOM NAV */
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:white;
+  display:flex;
+  border-top:1px solid #ddd;
+  z-index:999;
+}
+
+.bottom-nav a{
+  flex:1;
+  text-align:center;
+  padding:10px 5px;
+  text-decoration:none;
+  color:#666;
+  font-size:13px;
+}
+
+.bottom-nav a.active{
+  color:#007bff;
+  font-weight:bold;
+}
+
+.nav-icon{
+  display:block;
+  font-size:20px;
+  margin-bottom:2px;
+}  
 </style>
 </head>
 
 <body>
 
 <div class="topbar">
-  <button onclick="goBack()">&#8592;</button>
   <b>Report</b>
 </div>
 
@@ -139,6 +170,29 @@ input[type="month"]{
   ">
      Loading...
   </div>
+<div class="bottom-nav">
+
+  <a href="index.html" class="active">
+    <span class="nav-icon">&#8962;</span>
+    Iuran
+  </a>
+
+  <a href="keuangan.html">
+    <span class="nav-icon">&#128181;</span>
+    Keuangan
+  </a>
+
+  <a href="inventaris.html">
+    <span class="nav-icon">&#128230;</span>
+    Inventaris
+  </a>
+
+  <a href="notulen.html">
+    <span class="nav-icon">&#9998;</span>
+    Notulen
+  </a>
+
+</div>  
 </div>
 
 <script>
